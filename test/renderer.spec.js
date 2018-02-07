@@ -15,6 +15,6 @@ describe('Renderer', () => {
 
     let res = await dispatchFetch(new Request("/blah/blah"))
     let html = await res.text()
-    expect(html).to.include(`<h1 id="hello-world">${complexHeaderName}</h1>`)
+    expect(html).to.include(`<h1 id="hello-world">Hello world</h1>`)
   })
 })
