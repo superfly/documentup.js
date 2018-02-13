@@ -21,7 +21,7 @@ fly.http.route("/", async function (req) {
 /*
 * Routes can include wildcard parameters that match multiple segments of a URL. 
 * Anything to `/superfly/documentup/path/to/file` gets the source code treatment.
-*/ 
+*/
 fly.http.route("/:login/:repo/*path",function (req, route) {
   const params = route.params
   return renderCode(params.login, params.repo, params['*'])
