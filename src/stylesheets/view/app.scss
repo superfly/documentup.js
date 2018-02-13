@@ -7,14 +7,9 @@
  * ------------------------------------ */
 
 .app {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
   overflow-x: hidden;
-
-  main {
-    display: flex;
-    flex-direction: column;
-  }
+  display: flex;
+  flex-direction: column;
 
   h1,
   h2,
