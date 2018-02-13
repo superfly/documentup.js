@@ -8,8 +8,6 @@
 
 .app {
   overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
 
   h1,
   h2,
@@ -34,10 +32,10 @@
 
 .view-content,
 [role='main'].view-content {
-  flex: 1;
+  min-height: 100%;
   display: flex;
   flex-direction: row;
-  width: 100vw;
+  width: 100%;
   justify-content: center;
   background: $white-2 linear-gradient(to right, $white-2  50%, $white-1 50%) fixed;
 }
