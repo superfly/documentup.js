@@ -1,66 +1,61 @@
 /*
-* Set up routes for HTTP requests. We're using the
-* [npm routes](https://github.com/aaronblohowiak/routes.js) module, which is
-* bundled into the app with webpack.
+* Set up routes for HTTP requests. Fly Apps have access to a built in 
+* [http router](https://fly.io/docs/apps/api/#fly-http).
+*
+* The most used route in this application matches a Github `/:login/:repo`. We handle 
+* requests to those URLs using the `renderRepo` function defined later.
 */
-
-const router = require('routes')()
+fly.http.route("/:login/:repo", async function (req, params) {
+  return await renderRepo(params.login, params.repo)
+})
 
 /*
-* In search of a pretty site, use webpack to load CSS from
-* [index.css](/src/stylesheets/index.css) into a string constant.
-* Then add a route to serve CSS from `/screen.css`
+* The root `/` path should render the [repository](https://github.com/superfly/documentup.js) 
+* for this application.
 */
-const css = require('./stylesheets/index.scss').toString()
-router.addRoute("/screen.css", function (event, match) {
-  return new Response(css, { headers: { 'content-type': 'text/css' } })
-})
-const woff2 = require('./stylesheets/fonts-woff2.css').toString()
-router.addRoute("/fonts-woff2.css", function (event, match) {
-  return new Response(woff2, { headers: { 'content-type': 'text/css' } })
-})
-const woff = require('./stylesheets/fonts-woff.css').toString()
-router.addRoute("/fonts-woff.css", function (event, match) {
-  return new Response(woff, { headers: { 'content-type': 'text/css' } })
-})
-
-router.addRoute("/images/:filename.:format", function staticImage(event, match) {
-  const format = match.params.format
-  const mimeType = format === 'ico' ? "image/x-icon" : `image/${format}`
-  try {
-    const img = require(`./images/${match.params.filename}.${match.params.format}`)
-    return new Response(img, { 'content-type': mimeType })
-  } catch (e) {
-    return new Response("not found", { status: 404 })
-  }
-})
-
-router.addRoute("/:login/:repo", async function (event, match) {
-  return await renderRepo(match.params.login, match.params.repo)
-})
-router.addRoute("/", async function (event, match) {
+fly.http.route("/", async function (req, params) {
   return await renderRepo("superfly", "documentup.js")
 })
-router.addRoute("/:login/:repo/*.*", async function (event, match) {
-  return await renderCode(match.params.login, match.params.repo, match.splats.join("."))
+
+/*
+* Routes can include wildcard parameters that match multiple segments of a URL. 
+* Anything to `/superfly/documentup/path/to/file` gets the source code treatment.
+*/ 
+fly.http.route("/:login/:repo/*path", async function (req, params) {
+  return await renderCode(params.login, params.repo, params.path)
 })
 
+/* 
+* These are the types and template necessary to render a README file from a repository. 
+* The `renderRepo` function will request the a README file from Github's CDN, then render 
+* it to HTML from Markdown.
+*/
 const Renderer = require('./renderer')
 const Repository = require('./repository')
 const pageTpl = require('./views/page.pug')
 async function renderRepo(login, repoName) {
   const renderFn = async function () {
+    /*
+    * Fly Applications have access to the [HTTP `fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) 
+    * function defined by the WhatWG.
+    */
     const response = await fetch(`https://raw.githubusercontent.com/${login}/${repoName}/master/README.md`)
     if (response.status != 200) {
       return false
     }
     const repo = new Repository(login, repoName)
     const renderer = new Renderer(login, repoName)
+    /*
+    * HTTP requests include a body stream. This needs to be read into memory for our Markdown 
+    * renderer to work.
+    */
     let raw = await response.text()
     let result = renderer.render(raw)
     return pageTpl({ html: result.body, tableOfContents: result.tableOfContents, repository: repo })
   }
-
+  /*
+  * For speed, check the cache before making an HTTP request and rendering markdown.
+  */
   return tryCache(login + "/" + repoName, renderFn)
 }
 
@@ -124,14 +119,44 @@ async function tryCache(key, fillFn) {
 
 }
 
-addEventListener("fetch", function (event) {
-  const { request, respondWith } = event
-  const path = new URL(request.url).pathname
-  let match = router.match(path)
+/*
+* Static file handling in fly apps is a little different. There's no file system available
+* when this Javascript is executed, so we need to bundle statis assets using 
+* [Webpack](/webpack.config.js). This is similar to the asset compilation steps in most 
+* web frameworks.
+*
+* Webpack loads and processes scss files like 
+* [index.scss](/src/stylesheets/index.scss) into string constants.
+* We add routes for each of `/screen.css`, and the necessary font files.
+*/
+const css = require('./stylesheets/index.scss').toString()
+fly.http.route("/screen.css", function (req, params) {
+  return new Response(css, { headers: { 'content-type': 'text/css' } })
+})
+const woff2 = require('./stylesheets/fonts-woff2.css').toString()
+fly.http.route("/fonts-woff2.css", function (req, params) {
+  return new Response(woff2, { headers: { 'content-type': 'text/css' } })
+})
+const woff = require('./stylesheets/fonts-woff.css').toString()
+fly.http.route("/fonts-woff.css", function (req, params) {
+  return new Response(woff, { headers: { 'content-type': 'text/css' } })
+})
 
-  if (!match) {
-    event.respondWith(new Response("docup not found", { status: 404 }))
-  } else {
-    event.respondWith(match.fn(event, match))
+/*
+* Serious magic, wtf.
+*/
+
+fly.http.route("/images/:filename.:format", function staticImage(req, params) {
+  const format = params.format
+  const mimeType = format === 'ico' ? "image/x-icon" : `image/${format}`
+  try {
+    const img = require(`./images/${params.filename}.${params.format}`)
+    return new Response(img, { 'content-type': mimeType })
+  } catch (e) {
+    return new Response("not found", { status: 404 })
   }
+})
+
+fly.http.respondWith(function(req){
+  return new Response("docup not found", { status: 404 })
 })
