@@ -12,7 +12,7 @@
   }
 }
 
-$sidebar-width: 38.2%;
+$sidebar-width: 30%;
 $document-width: 100% - $sidebar-width;
 $fluid-sidebar-width: '50vw - 800px + (1600px * #{strip-unit($sidebar-width)} / 100)';
 
@@ -77,7 +77,9 @@ $fluid-sidebar-width: '50vw - 800px + (1600px * #{strip-unit($sidebar-width)} / 
 .annotation {
   @include at-least(1000px) {
     flex: 0 1 #{$sidebar-width};
+    width: $sidebar-width;
     @include fluid-padding;
+    font-size: $base-size - 2px;
 
     &:first-child {
       padding-top: 40px;
@@ -104,6 +106,7 @@ $fluid-sidebar-width: '50vw - 800px + (1600px * #{strip-unit($sidebar-width)} / 
 
   @include at-least(1000px) {
     flex: 0 1 #{$document-width};
+    width: $sidebar-width;
     padding-bottom: #{$base-line-height}em;
     // margin: 0;
     @include fluid-padding;

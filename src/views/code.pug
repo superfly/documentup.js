@@ -13,6 +13,10 @@ html
     meta(name="HandheldFriendly" content="True")
     meta(name="viewport" content="width=device-width, initial-scale=1.0")
 
+    //- Favicon
+    link(rel="icon" href="/images/favicon.ico" sizes="16x16 32x32 48x48" type="image/x-icon")
+
+    //- Page title
     title DocumentUp &middot; Automatically generated documentation sites for your markdown files
 
     //- Stylesheets
@@ -22,28 +26,26 @@ html
     script
       include includes/fonts.js
 
-  body
+  body.app
 
     //- Main content
     main(role="main")
-
-      article
-        - let commentsList = comments
-        dl.annotated-code
-          while commentsList
-            - let current = commentsList.data
-            - let nextList = commentsList.next
-            - let nextComment = nextList ? nextList.data : null
-            dt.annotation
-              != markdown.render(current.content).body
-            dd.code
-              - let code = ''
-              if nextList
-                - code = source.slice(Math.max(current.codeStart - 1, 0), nextComment.begin - 1).join("\n")
-              else
-                - code = source.slice(current.codeStart).join("\n")
-              pre
-                code(class=`language-${language}`)
-                  - syntax = Prism.languages[language]
-                  != (syntax && Prism.highlight(code, syntax)) || code
-            - commentsList = nextList
+      - let commentsList = comments
+      dl.annotated-code
+        while commentsList
+          - let current = commentsList.data
+          - let nextList = commentsList.next
+          - let nextComment = nextList ? nextList.data : null
+          dt.annotation
+            != markdown.render(current.content).body
+          dd.code
+            - let code = ''
+            if nextList
+              - code = source.slice(Math.max(current.codeStart - 1, 0), nextComment.begin - 1).join("\n")
+            else
+              - code = source.slice(current.codeStart).join("\n")
+            pre
+              code(class=`language-${language}`)
+                - syntax = Prism.languages[language]
+                != (syntax && Prism.highlight(code, syntax)) || code
+          - commentsList = nextList

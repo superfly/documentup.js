@@ -1,3 +1,5 @@
+const autoprefixer = require('autoprefixer')
+
 module.exports = {
   entry: './src/index.js',
   resolve: {
@@ -15,11 +17,25 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['to-string-loader', 'css-loader', 'postcss-loader']
+        use: ['to-string-loader', 'css-loader', {
+          loader: 'postcss-loader',
+          options: {
+            plugins: function () {
+              return [autoprefixer({ grid: true })]
+            }
+          }
+        }]
       },
       {
         test: /\.scss$/,
-        use: ['to-string-loader', 'css-loader', 'postcss-loader', 'sass-loader']
+        use: ['to-string-loader', 'css-loader', {
+          loader: 'postcss-loader',
+          options: {
+            plugins: function () {
+              return [autoprefixer({ grid: true })]
+            }
+          }
+        }, 'sass-loader']
       },
       {
         test: /\.pug$/,
