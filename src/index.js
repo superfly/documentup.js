@@ -5,7 +5,8 @@
 * The most used route in this application matches a Github `/:login/:repo`. We handle 
 * requests to those URLs using the `renderRepo` function defined later.
 */
-fly.http.route("/:login/:repo", async function (req, params) {
+fly.http.route("/:login/:repo", async function (req, route) {
+  const params = route.params
   return await renderRepo(params.login, params.repo)
 })
 
@@ -13,7 +14,7 @@ fly.http.route("/:login/:repo", async function (req, params) {
 * The root `/` path should render the [repository](https://github.com/superfly/documentup.js) 
 * for this application.
 */
-fly.http.route("/", async function (req, params) {
+fly.http.route("/", async function (req) {
   return await renderRepo("superfly", "documentup.js")
 })
 
@@ -21,8 +22,9 @@ fly.http.route("/", async function (req, params) {
 * Routes can include wildcard parameters that match multiple segments of a URL. 
 * Anything to `/superfly/documentup/path/to/file` gets the source code treatment.
 */ 
-fly.http.route("/:login/:repo/*path", async function (req, params) {
-  return await renderCode(params.login, params.repo, params.path)
+fly.http.route("/:login/:repo/*path",function (req, route) {
+  const params = route.params
+  return renderCode(params.login, params.repo, params['*'])
 })
 
 /* 
@@ -39,7 +41,8 @@ async function renderRepo(login, repoName) {
     * Fly Applications have access to the [HTTP `fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) 
     * function defined by the WhatWG.
     */
-    const response = await fetch(`https://raw.githubusercontent.com/${login}/${repoName}/master/README.md`)
+    const url = `https://raw.githubusercontent.com/${login}/${repoName}/master/README.md`
+    const response = await fetch(url)
     if (response.status != 200) {
       return false
     }
@@ -51,7 +54,11 @@ async function renderRepo(login, repoName) {
     */
     let raw = await response.text()
     let result = renderer.render(raw)
-    return pageTpl({ html: result.body, tableOfContents: result.tableOfContents, repository: repo })
+    return pageTpl({
+      html: result.body,
+      tableOfContents: result.tableOfContents,
+      repository: repo
+    })
   }
   /*
   * For speed, check the cache before making an HTTP request and rendering markdown.
@@ -76,8 +83,10 @@ const extensions = {
 
 const codeTpl = require('./views/code.pug')
 async function renderCode(login, repoName, filePath) {
+  console.log(login, repoName, filePath)
   const renderFn = async function () {
-    const response = await fetch(`https://raw.githubusercontent.com/${login}/${repoName}/master/${filePath}`)
+    const url = `https://raw.githubusercontent.com/${login}/${repoName}/master/${filePath}`
+    const response = await fetch(url)
     if (response.status != 200) {
       return false
     }
@@ -94,7 +103,12 @@ async function renderCode(login, repoName, filePath) {
     console.log("code has lines:", lines.length)
     console.log("found comment blocks:", Object.values(comments).length)
 
-    return codeTpl({ comments: arrayToLinkedlist(Object.values(comments)), source: lines, markdown: renderer, language: language })
+    return codeTpl({
+      comments: arrayToLinkedlist(Object.values(comments)),
+      source: lines,
+      markdown: renderer,
+      language: language
+    })
   }
   return tryCache(login + "/" + repoName + "/" + filePath, renderFn)
 }
@@ -115,7 +129,9 @@ async function tryCache(key, fillFn) {
     console.log("cache hit:", key)
     cacheStatus = "HIT"
   }
-  return new Response(body, { headers: { 'content-type': 'text/html', 'X-cache': cacheStatus } })
+  return new Response(body, {
+    headers: { 'content-type': 'text/html', 'X-cache': cacheStatus }
+  })
 
 }
 
