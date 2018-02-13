@@ -23,6 +23,19 @@ const woff = require('./stylesheets/fonts-woff.css').toString()
 router.addRoute("/fonts-woff.css", function (event, match) {
   return new Response(woff, { headers: { 'content-type': 'text/css' } })
 })
+
+router.addRoute("/images/:filename.:format", function staticImage(event, match) {
+  const format = match.params.format
+  const mimeType = format === 'ico' ? "image/x-icon" : `image/${format}`
+  try {
+    const img = require(`./images/${match.params.filename}.${match.params.format}`)
+    return new Response(img, { 'content-type': mimeType })
+  } catch (e) {
+    return new Response("not found", { status: 404 })
+  }
+})
+
+
 router.addRoute("/:login/:repo", async function (event, match) {
   return await renderRepo(match.params.login, match.params.repo)
 })
@@ -34,7 +47,6 @@ router.addRoute("/:login/:repo/*.*", async function (event, match) {
 })
 
 // Someone fix this plz thx - <3 Kyle
-import img from './images/favicon.ico'
 
 const Renderer = require('./renderer')
 const Repository = require('./repository')
@@ -72,7 +84,7 @@ const extensions = {
 
 const codeTpl = require('./views/code.pug')
 async function renderCode(login, repoName, filePath) {
-  const renderFn = async function(){
+  const renderFn = async function () {
     const response = await fetch(`https://raw.githubusercontent.com/${login}/${repoName}/master/${filePath}`)
     if (response.status != 200) {
       return false
@@ -83,7 +95,7 @@ async function renderCode(login, repoName, filePath) {
     const renderer = new Renderer(login, repoName)
     let source = await response.text()
     const comments = commentExtractor(source)
-    Object.values(comments).forEach(function(c){
+    Object.values(comments).forEach(function (c) {
       c.content = renderer.render(c.content).body
     })
     const lines = splitLines(source)
@@ -95,7 +107,7 @@ async function renderCode(login, repoName, filePath) {
   return tryCache(login + "/" + repoName + "/" + filePath, renderFn)
 }
 
-async function tryCache(key, fillFn){
+async function tryCache(key, fillFn) {
   let cacheStatus = "MISS"
 
   let body = await fly.cache.getString(key)
@@ -103,7 +115,7 @@ async function tryCache(key, fillFn){
   if (!body) {
     console.log("cache miss:", key)
     body = await fillFn()
-    if(!body){ // 404
+    if (!body) { // 404
       return new Response("four-oh-four", { status: 404 })
     }
     await fly.cache.set(key, body, 3600)
