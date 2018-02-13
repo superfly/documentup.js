@@ -97,7 +97,8 @@ async function renderCode(login, repoName, filePath) {
       return false
     }
     /*
-    * For most request, the extension will match the file format.
+    * For most request, the extension will match the file format. Sometimes (like with .js) 
+    * we need a language mapped from `extensions`.
     */
     const ext = (filePath.match(/\.(\w+)$/) || [, ''])[1]
     const language = (extensions[ext] || ext)
@@ -132,36 +133,71 @@ async function renderCode(login, repoName, filePath) {
 * when the cache has no data for a given request.
 */
 async function tryCache(key, fillFn) {
-  const cacheVersion = "1"
-  key = `v${cacheVersion}:${key}`
   let cacheStatus = "MISS"
 
-  let body = await fly.cache.getString(key)
-
-  if (!body) {
-    console.log("cache miss:", key)
-    body = await fillFn()
-    if (!body) { // 404
-      return new Response("four-oh-four", { status: 404 })
+  /*
+  * We may want to apply cache filling logic in multiple places, wrapping it in a 
+  * new async function is a convenient way to do that.
+  */
+  const fillAndSet = async function(){
+    const body = await fillFn();
+    if(!body){
+      /*
+      * When the fillFn returns nothing, no caching.
+      */
+      return
     }
-    await fly.cache.set(key, body, 3600)
+    const entry = {
+      body: body,
+      time: Date.now()
+    }
+    fly.cache.set(key, JSON.stringify(entry), 3600)
+    return entry
+  }
+
+  let cached = await fly.cache.getString(key)
+
+  if (!cached) {
+    console.log("cache miss:", key)
+    cached = await fillAndSet()
   } else {
     console.log("cache hit:", key)
     cacheStatus = "HIT"
+
+    cached = JSON.parse(cached)
+    /*
+    * If the cached entry is more than 30 seconds old, refresh it in the background.
+    *
+    * Since `fillAndSet` is an async function, it returns a promise immediately 
+    * and doesn't affect response time.
+    */
+    if(cached.time < (Date.now() - 30000)){
+      const p = fillAndSet()
+      cacheStatus = "HIT+REFRESH"
+      p.then(function(result){
+        console.log("cache refreshed:", key)
+      }).catch(function(err){
+        console.error("cache refresh failed:", err)
+      })
+    }
+  }
+
+  if (!cached) { // 404
+    return new Response("four-oh-four", { status: 404 })
   }
   /*
   * The response includes an X-cache headers, which is a pseudo standard way of indicating 
   * whether the data comes from the cache, or was generated anew.
   */
-  return new Response(body, {
+  return new Response(cached.body, {
     headers: { 'content-type': 'text/html', 'X-cache': cacheStatus }
   })
 
 }
 
 /*
-* Static file handling in fly apps is a little different. There's no file system available
-* when this Javascript is executed, so we need to bundle statis assets using 
+* Static file handling in fly apps relies is a little odd. There's no file system available
+* when this Javascript is executed, so we bundle statis assets using 
 * [Webpack](/webpack.config.js). This is similar to the asset compilation steps in most 
 * web frameworks.
 *
@@ -183,13 +219,18 @@ fly.http.route("/fonts-woff.css", function (req, params) {
 })
 
 /*
-* Serious magic, wtf.
+* There are a couple of different images in this project, so we can create a 
+* parameterized route to handle all of them.
 */
 
 fly.http.route("/images/:filename.:format", function staticImage(req, params) {
   const format = params.format
   const mimeType = format === 'ico' ? "image/x-icon" : `image/${format}`
   try {
+    /*
+    * Webpack is smart. It recognizes that we might need every image in `/images`/, 
+    * so it helpfully bundles all of them up for runtime require calls.
+    */
     const img = require(`./images/${params.filename}.${params.format}`)
     return new Response(img, { 'content-type': mimeType })
   } catch (e) {
@@ -197,6 +238,9 @@ fly.http.route("/images/:filename.:format", function staticImage(req, params) {
   }
 })
 
+/*
+* This is a default handler when no routes match.
+*/
 fly.http.respondWith(function(req){
   return new Response("docup not found", { status: 404 })
 })
