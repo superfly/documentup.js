@@ -35,7 +35,6 @@ router.addRoute("/images/:filename.:format", function staticImage(event, match) 
   }
 })
 
-
 router.addRoute("/:login/:repo", async function (event, match) {
   return await renderRepo(match.params.login, match.params.repo)
 })
@@ -45,8 +44,6 @@ router.addRoute("/", async function (event, match) {
 router.addRoute("/:login/:repo/*.*", async function (event, match) {
   return await renderCode(match.params.login, match.params.repo, match.splats.join("."))
 })
-
-// Someone fix this plz thx - <3 Kyle
 
 const Renderer = require('./renderer')
 const Repository = require('./repository')
