@@ -66,9 +66,15 @@ async function renderRepo(login, repoName) {
   return tryCache(login + "/" + repoName, renderFn)
 }
 
+/*
+* Routes to source code get rendered as if they're annotated code. Comments on the left, 
+* syntax highlighted code on the right. These are useful modules for extracting code and 
+* comments into a template-able format.
+*/
 const commentExtractor = require('multilang-extract-comments')
 const splitLines = require('split-lines')
 const arrayToLinkedlist = require('array-to-linkedlist')
+ 
 const extensions = {
   'js': 'javascript',
   'py': 'python',
@@ -90,6 +96,9 @@ async function renderCode(login, repoName, filePath) {
     if (response.status != 200) {
       return false
     }
+    /*
+    * For most request, the extension will match the file format.
+    */
     const ext = (filePath.match(/\.(\w+)$/) || [, ''])[1]
     const language = (extensions[ext] || ext)
     console.log(language)
@@ -113,7 +122,18 @@ async function renderCode(login, repoName, filePath) {
   return tryCache(login + "/" + repoName + "/" + filePath, renderFn)
 }
 
+/*
+* The `fly.cache` is a volatile, k/v store for keeping data in each edge location. 
+* It's useful for storing fully rendered versions of backend data, and can reduce request 
+* times by an order of magnitude.
+*
+* For this application, a generic `tryCache` function is useful. It takes a cache key, 
+* which is generated based on the requested file, and a function for generating content 
+* when the cache has no data for a given request.
+*/
 async function tryCache(key, fillFn) {
+  const cacheVersion = "1"
+  key = `v${cacheVersion}:${key}`
   let cacheStatus = "MISS"
 
   let body = await fly.cache.getString(key)
@@ -129,6 +149,10 @@ async function tryCache(key, fillFn) {
     console.log("cache hit:", key)
     cacheStatus = "HIT"
   }
+  /*
+  * The response includes an X-cache headers, which is a pseudo standard way of indicating 
+  * whether the data comes from the cache, or was generated anew.
+  */
   return new Response(body, {
     headers: { 'content-type': 'text/html', 'X-cache': cacheStatus }
   })
