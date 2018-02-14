@@ -43,7 +43,7 @@ html
             if nextList
               - code = source.slice(Math.max(current.codeStart - 1, 0), nextComment.begin - 1).join("\n")
             else
-              - code = source.slice(current.codeStart).join("\n")
+              - code = source.slice(Math.max(current.codeStart - 1, 0)).join("\n")
             pre
               code(class=`language-${language}`)
                 - syntax = Prism.languages[language]
