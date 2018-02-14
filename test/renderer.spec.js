@@ -13,7 +13,7 @@ describe('Renderer', () => {
   after(() => { fetchMock.restore() })
   it("renders the proper heading id", async () => {
 
-    let res = await dispatchFetch(new Request("/blah/blah"))
+    let res = await dispatchFetch(new Request("http://localhost/blah/blah"))
     let html = await res.text()
     expect(html).to.include(`<h1 id="hello-world">Hello world</h1>`)
   })

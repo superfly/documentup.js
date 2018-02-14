@@ -5,7 +5,7 @@
 
 .token.atrule,
 .token.attr-value {
-  color: $green-3;
+  color: $green-4;
 }
 
 .token.cdata,
@@ -63,7 +63,7 @@
   .token.number,
   .token.string,
   .token.variable {
-    color: $green-3;
+    color: $green-4;
   }
 
   .token.property .token.variable {
@@ -81,7 +81,7 @@
 
   .token.function,
   .token.variable {
-    color: $green-3;
+    color: $green-4;
   }
 }
 
@@ -117,7 +117,7 @@
   }
 
   .token.string {
-    color: $green-3;
+    color: $green-4;
   }
 }
 
@@ -135,6 +135,6 @@
   }
 
   .token.string {
-    color: $green-3;
+    color: $green-4;
   }
 }

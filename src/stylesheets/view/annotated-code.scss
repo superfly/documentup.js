@@ -102,6 +102,7 @@ $fluid-sidebar-width: '50vw - 800px + (1600px * #{strip-unit($sidebar-width)} / 
 }
 
 .code {
+  font-size: 15px;
   // margin-bottom: $vertical-margin;
 
   @include at-least(1000px) {

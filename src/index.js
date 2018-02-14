@@ -5,24 +5,24 @@
 * The most used route in this application matches a Github `/:login/:repo`. We handle 
 * requests to those URLs using the `renderRepo` function defined later.
 */
-fly.http.route("/:login/:repo", async function (req, route) {
+fly.http.route("/:login/:repo", function loginRepoHandler(req, route) {
   const params = route.params
-  return await renderRepo(params.login, params.repo)
+  return renderRepo(params.login, params.repo)
 })
 
 /*
 * The root `/` path should render the [repository](https://github.com/superfly/documentup.js) 
 * for this application.
 */
-fly.http.route("/", async function (req) {
-  return await renderRepo("superfly", "documentup.js")
+fly.http.route("/", function rootHandler(req) {
+  return renderRepo("superfly", "documentup.js")
 })
 
 /*
 * Routes can include wildcard parameters that match multiple segments of a URL. 
 * Anything to `/superfly/documentup/path/to/file` gets the source code treatment.
 */
-fly.http.route("/:login/:repo/*path",function (req, route) {
+fly.http.route("/:login/:repo/*path", function codePageHandler(req, route) {
   const params = route.params
   return renderCode(params.login, params.repo, params['*'])
 })
@@ -74,7 +74,7 @@ async function renderRepo(login, repoName) {
 const commentExtractor = require('multilang-extract-comments')
 const splitLines = require('split-lines')
 const arrayToLinkedlist = require('array-to-linkedlist')
- 
+
 const extensions = {
   'js': 'javascript',
   'py': 'python',
@@ -139,9 +139,9 @@ async function tryCache(key, fillFn) {
   * We may want to apply cache filling logic in multiple places, wrapping it in a 
   * new async function is a convenient way to do that.
   */
-  const fillAndSet = async function(){
+  async function fillAndSet() {
     const body = await fillFn();
-    if(!body){
+    if (!body) {
       /*
       * When the fillFn returns nothing, no caching.
       */
@@ -171,14 +171,14 @@ async function tryCache(key, fillFn) {
     * Since `fillAndSet` is an async function, it returns a promise immediately 
     * and doesn't affect response time.
     */
-    if(cached.time < (Date.now() - 30000)){
-      const p = fillAndSet()
-      cacheStatus = "HIT+REFRESH"
-      p.then(function(result){
+    if (cached.time < (Date.now() - 30000)) {
+      fillAndSet().then(function (result) {
         console.log("cache refreshed:", key)
-      }).catch(function(err){
+      }).catch(function (err) {
+        console.log("error in refresh")
         console.error("cache refresh failed:", err)
       })
+      cacheStatus = "HIT+REFRESH"
     }
   }
 
@@ -190,7 +190,7 @@ async function tryCache(key, fillFn) {
   * whether the data comes from the cache, or was generated anew.
   */
   return new Response(cached.body, {
-    headers: { 'content-type': 'text/html', 'X-cache': cacheStatus }
+    headers: { 'content-type': 'text/html', 'x-cache': cacheStatus }
   })
 
 }
@@ -241,6 +241,6 @@ fly.http.route("/images/:filename.:format", function staticImage(req, params) {
 /*
 * This is a default handler when no routes match.
 */
-fly.http.respondWith(function(req){
+fly.http.respondWith(function (req) {
   return new Response("docup not found", { status: 404 })
 })

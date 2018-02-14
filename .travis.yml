@@ -1,11 +1,6 @@
-env:
-  global:
-    secure: G/EHikk5ndfd5HnfIJcAdW5aaQG37C9wbdYFF66BaTlXkY4p84bW7cc5IIoQAnLdIpc1fgM4fJQwiJBcHe716TUGZMsbeoDKRDWnF2fckK5fLe/gXa+w3ZyCfI5B15t7APcTLHxB6ZXoyPuVupg3+RS4XSqocn/ezISENyJAL/EC8chyrJu8KFTF3xeNZ/5n1xJsQcFgRK6sFTbsw2qRfa/npN0DJ7r4hbOzLlAnzFKKJSlh/686h9B4ENf1hXeLPRw4acF00ibctOeG1BkIHe12jG950ttcAMMIa9KPKJZWmXO0hnVz4vS3zZymhWXUEsHWUFoXs6FnkvipulEUHMHALd+yhVYLnJrbup7SsFheTraonzx/BrAS32Seqa2wrwgN8RamneRG+Kw4mVXuewZbnLIiSxkvzcE1am9w7JsDdgRe1QQh1o1CFnU/k2ZnS+yY0VTd6N1wwrvPvvS3V9IJsg5nH8oYzs242UPSu9m1krdRCab7aKPfyBS7XV9/G8WKXbcbQcNoHnhSLczpY47VzP8lSy0YMIcWInSTkqv9qU3vmjJC5veZlvI7ZcJnKFim1u1nhAopvGvKSq2CV2/BufT+jFLxIkS/u9LYXJpyFT9jFTjtJa9eizvPOnsHWgbyRCQraB13SJaZYxf3HmitrvebHcwdVWJICKBvrHg=
-
 language: node_js
 node_js:
-  - "8"
-
+- '8'
 addons:
   apt:
     sources:
@@ -13,14 +8,15 @@ addons:
     packages:
     - gcc-5
     - g++-5
-
 before_install:
-  - set -e
-  - export CXX="g++-5"
-
+- set -e
+- export CXX="g++-5"
 install:
-  - npm install
-
+- npm install
 script:
-  - npm test
-  - fly deploy -a js-documentup-com
+- npm test
+after_success:
+- fly deploy
+env:
+  global:
+    secure: mBSneppIqd9TkUxnv9oKM05FNyqRK26oa8vahsLCO+aJWh1Wsecs3h0nnYji+zbpEw+vM/QEPlSMUNag5KVMachSu1U9xum2Vtws6QELBqqai4LnZ55IF55SnSryGYAAHNK2PbN9cicln0IVwuQ9DDXJ/is3R99DRXnY6BUBLHMtm5QgVfEjbnggFaT+srN1b52jrC5mGcdCPzhsV37rTtxO8IdwAKLJQsYQbeKEFFfb6CDzrMeBjJFGt1WGQxW0ZYqLxLuJjQOCj3XrUnO4rpMPG5nCeew2C4Gg5YXDo1c2SfvPsaV11rhJO6PR9CrBq7ccJ6MiCweMGBR0kQbi3cBeClK8v0bXgg0lkciYg7vqKOqdjMIJUF/Buyi81uiN+/F3Nqg248hhIa4kqh30ABUrB8q838uWzIDHa30duJ2pa37nuSTJ+Mw3jqwnrsuwhndGPdvw/vFNoa2nPiriom6mSEVJP8lybibd033SVOi6pm/csno0cmMtnFqYVEUzY2VImnvVgT1ViK3h09teLHSgaxKH6Y6hJTnMNnyZmfedLkbXTC2YtBRYWtMaA9vPNkzAuEUWz/KuXVjXfhyEYvfrkLXVljCdf7BCHlDCcB5I2f/Be4AbMBe9Lgq9xLVa+eb6hfUug001dJ1aU8vNA7xiMptpjn8SHE7yXjbJGO4=
