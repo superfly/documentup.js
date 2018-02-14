@@ -18,6 +18,7 @@ $fluid-sidebar-width: '50vw - 800px + (1600px * #{strip-unit($sidebar-width)} / 
 
 .annotated-code {
   @include padded-module(1600px);
+  font-size: 16px;
 
   pre,
   code {
@@ -102,7 +103,7 @@ $fluid-sidebar-width: '50vw - 800px + (1600px * #{strip-unit($sidebar-width)} / 
 }
 
 .code {
-  font-size: 15px;
+  // font-size: 15px;
   // margin-bottom: $vertical-margin;
 
   @include at-least(1000px) {
