@@ -223,7 +223,7 @@ fly.http.route("/fonts-woff.css", function (req, params) {
 * parameterized route to handle all of them.
 */
 
-fly.http.route("/images/:filename.:format", function staticImage(req, params) {
+fly.http.route("/images/:filename(^\\w+).:format", function staticImage(req, { params }) {
   const format = params.format
   const mimeType = format === 'ico' ? "image/x-icon" : `image/${format}`
   try {
@@ -234,6 +234,7 @@ fly.http.route("/images/:filename.:format", function staticImage(req, params) {
     const img = require(`./images/${params.filename}.${params.format}`)
     return new Response(img, { 'content-type': mimeType })
   } catch (e) {
+    console.error(e)
     return new Response("not found", { status: 404 })
   }
 })
