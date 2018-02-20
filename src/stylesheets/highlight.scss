@@ -1,140 +1,175 @@
-// Universal
-.token.keyword {
-  color: $violet-5;
-}
+// Prism light
+[class*='language-'] {
+  color: inherit;
+  background: $white-2;
 
-.token.atrule,
-.token.attr-value {
-  color: $green-4;
-}
-
-.token.cdata,
-.token.comment,
-.token.doctype,
-.token.prolog {
-  color: $gray-3;
-}
-
-.token.attr-name,
-.token.builtin,
-.token.function,
-.token.selector,
-.token.string {
-  color: $turquoise-5;
-}
-
-.token.constant,
-.token.important,
-.token.property,
-.token.regex,
-.token.symbol,
-.token.tag {
-  color: $red-2;
-}
-
-.token.boolean,
-.token.entity,
-.token.number,
-.token.operator,
-.token.punctuation,
-.token.url,
-.token.variable {
-  color: $blue-2;
-}
-
-.token.important {
-  font-weight: 700
-}
-
-.token.entity {
-  cursor: help
-}
-
-.namespace {
-  opacity: .7
-}
-
-// CSS & SCSS
-.language-css,
-.language-scss {
-  &,
-  .token.boolean,
-  .token.function,
-  .token.number,
-  .token.string,
-  .token.variable {
-    color: $green-4;
+  // Highlighted line
+  .highlighted-line {
+    background: rgba($black-1, .08);
   }
 
-  .token.property .token.variable {
-    color: $red-2;
-  }
-}
-
-// Bash
-.language-bash {
-  color: $turquoise-5;
-
-  .token.string {
-    color: $red-2;
-  }
-
-  .token.function,
-  .token.variable {
-    color: $green-4;
-  }
-}
-
-// Markup
-.language-markup {
+  // Purple
+  &.language-php .token.operator,
   .token.atrule,
-  .token.attr-value {
-    color: $red-2;
+  .token.keyword {
+    color: mix($blue-4, $violet-5);
   }
-}
 
-// JavaScript
-.language-js,
-.language-javascript {
-  &,
-  .language-markup .token.constant,
-  .language-markup .token.property,
-  .language-markup .token.symbol,
-  .language-markup .token.tag {
+  // Blue
+  &.language-markup .token.namespace,
+  .token.attr-name,
+  .token.selector,
+  .token.tag,
+  .token.tag *,
+  .language-url,
+  .token.function,
+  .token.url,
+  .token.title {
     color: $turquoise-5;
   }
 
-  .token.function {
-    color: $black-2;
+  // Gray
+  .token.comment,
+  .token.punctuation,
+  .token.operator {
+    color: $gray-2;
   }
 
+  // Light blue
+  &.language-ruby .token.constant + .token.punctuation,
+  &.language-ruby .token.constant + .token.punctuation + .token.symbol,
+  .token.boolean,
+  .token.builtin,
+  .token.class-name,
+  .token.constant,
+  .token.namespace {
+    color: $turquoise-3;
+  }
+
+  // Light red
   .token.number {
-    color: $violet-5;
-  }
-
-  .token.keyword {
     color: $red-2;
   }
 
-  .token.string {
+  // Red
+  &.language-css .token.property,
+  &.language-scss .token.property,
+  &.language-bash .token.option,
+  &.language-css .property,
+  .token.parameter,
+  .token.symbol {
+    color: $red-3;
+  }
+
+  // Green
+  &.language-bash .token.function,
+  &.language-html .token.attr-value > .punctuation:not(:first-child),
+  &.language-markup .token.attr-value > .punctuation:not(:first-child),
+  .token.curl,
+  .token.option,
+  .token.variable,
+  .token.macro .keyword,
+  .token.attr-value,
+  .token.macro,
+  .token.string,
+  .token.stripe,
+  .token.value {
     color: $green-4;
+  }
+
+  // Bold
+  .token.important {
+    font-weight: 700;
   }
 }
 
-// Ruby
-.language-ruby {
-  color: $turquoise-5;
+// Prism dark
+.lowlight {
+  color: $white-1;
+  background: $black-2;
 
-  .token.function,
-  .token.number {
-    color: $red-2;
-  }
+  [class*='language-'] {
 
-  .token.constant {
-    color: $black-2;
-  }
+    // Highlighted line
+    .highlighted-line {
+      background: rgba($white-1, .08);
+    }
 
-  .token.string {
-    color: $green-4;
+    // Purple
+    &.language-php .token.operator,
+    .token.atrule,
+    .token.keyword {
+      color: mix($blue-3, $violet-3);
+    }
+
+    // Blue
+    &.language-markup .token.namespace,
+    .token.attr-name,
+    .token.selector,
+    .token.tag,
+    .token.tag *,
+    .language-url,
+    .token.function,
+    .token.url,
+    .token.title {
+      color: $turquoise-3;
+    }
+
+    // Subtle blue
+    .token.comment,
+    .token.punctuation {
+      color: rgba($blue-1, .75);
+    }
+
+    // Subtle yellow
+    .token.operator {
+      color: rgba($yellow-1, .75);
+    }
+
+    // Light blue
+    &.language-ruby .token.constant + .token.punctuation,
+    &.language-ruby .token.constant + .token.punctuation + .token.symbol,
+    .token.boolean,
+    .token.builtin,
+    .token.class-name,
+    .token.constant,
+    .token.namespace {
+      color: $turquoise-1;
+    }
+
+    // Light red
+    .token.number {
+      color: $red-1;
+    }
+
+    // Red
+    &.language-css .token.property,
+    &.language-bash .token.option,
+    &.language-css .property,
+    .token.parameter,
+    .token.symbol {
+      color: $red-2;
+    }
+
+    // Green
+    &.language-bash .token.function,
+    &.language-html .token.attr-value > .punctuation:not(:first-child),
+    &.language-markup .token.attr-value > .punctuation:not(:first-child),
+    .token.curl,
+    .token.option,
+    .token.variable,
+    .token.macro .keyword,
+    .token.attr-value,
+    .token.macro,
+    .token.string,
+    .token.stripe,
+    .token.value {
+      color: $green-2;
+    }
+
+    // Bold
+    .token.important {
+      font-weight: 700;
+    }
   }
 }
