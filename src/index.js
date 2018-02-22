@@ -176,7 +176,7 @@ async function tryCache(key, fillFn) {
         console.log("cache refreshed:", key)
       }).catch(function (err) {
         console.log("error in refresh")
-        console.error("cache refresh failed:", err)
+        console.error("cache refresh failed:", err.toString())
       })
       cacheStatus = "HIT+REFRESH"
     }
@@ -234,7 +234,7 @@ fly.http.route("/images/:filename(^\\w+).:format", function staticImage(req, { p
     const img = require(`./images/${params.filename}.${params.format}`)
     return new Response(img, { 'content-type': mimeType })
   } catch (e) {
-    console.error(e)
+    console.error(e.toString())
     return new Response("not found", { status: 404 })
   }
 })
