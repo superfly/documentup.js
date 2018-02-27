@@ -1,5 +1,8 @@
 default: &default
   app_id: fly/documentup
+  config:
+    sentry_url:
+      fromSecret: sentry_url
 
 development:
   <<: *default

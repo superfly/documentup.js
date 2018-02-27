@@ -1,3 +1,15 @@
+import Raven from 'raven-js'
+const router = require('find-my-way')()
+
+if (app.config.sentry_url) {
+  Raven.config(app.config.sentry_url, {
+    environment: app.env,
+    tags: {
+      version: app.version
+    }
+  }).install()
+}
+
 /*
 * Set up routes for HTTP requests. Fly Apps have access to a built in 
 * [http router](https://fly.io/docs/apps/api/#fly-http).
@@ -5,8 +17,7 @@
 * The most used route in this application matches a Github `/:login/:repo`. We handle 
 * requests to those URLs using the `renderRepo` function defined later.
 */
-fly.http.route("/:login/:repo", function loginRepoHandler(req, route) {
-  const params = route.params
+router.on(["GET", "HEAD"], "/:login/:repo", function loginRepoHandler(req, { params }) {
   return renderRepo(params.login, params.repo)
 })
 
@@ -14,7 +25,7 @@ fly.http.route("/:login/:repo", function loginRepoHandler(req, route) {
 * The root `/` path should render the [repository](https://github.com/superfly/documentup.js) 
 * for this application.
 */
-fly.http.route("/", function rootHandler(req) {
+router.on(["GET", "HEAD"], "/", function rootHandler(req) {
   return renderRepo("superfly", "documentup.js")
 })
 
@@ -22,7 +33,7 @@ fly.http.route("/", function rootHandler(req) {
 * Routes can include wildcard parameters that match multiple segments of a URL. 
 * Anything to `/superfly/documentup/path/to/file` gets the source code treatment.
 */
-fly.http.route("/:login/:repo/*path", function codePageHandler(req, route) {
+router.on(["GET", "HEAD"], "/:login/:repo/*path", function codePageHandler(req, route) {
   const params = route.params
   return renderCode(params.login, params.repo, params['*'])
 })
@@ -206,15 +217,15 @@ async function tryCache(key, fillFn) {
 * We add routes for each of `/screen.css`, and the necessary font files.
 */
 const css = require('./stylesheets/index.scss').toString()
-fly.http.route("/screen.css", function (req, params) {
+router.on(["GET", "HEAD"], "/screen.css", function (req) {
   return new Response(css, { headers: { 'content-type': 'text/css' } })
 })
 const woff2 = require('./stylesheets/fonts-woff2.css').toString()
-fly.http.route("/fonts-woff2.css", function (req, params) {
+router.on(["GET", "HEAD"], "/fonts-woff2.css", function (req) {
   return new Response(woff2, { headers: { 'content-type': 'text/css' } })
 })
 const woff = require('./stylesheets/fonts-woff.css').toString()
-fly.http.route("/fonts-woff.css", function (req, params) {
+router.on(["GET", "HEAD"], "/fonts-woff.css", function (req) {
   return new Response(woff, { headers: { 'content-type': 'text/css' } })
 })
 
@@ -223,7 +234,7 @@ fly.http.route("/fonts-woff.css", function (req, params) {
 * parameterized route to handle all of them.
 */
 
-fly.http.route("/images/:filename(^\\w+).:format", function staticImage(req, { params }) {
+router.on(["GET", "HEAD"], "/images/:filename(^\\w+).:format", function staticImage(req, { params }) {
   const format = params.format
   const mimeType = format === 'ico' ? "image/x-icon" : `image/${format}`
   try {
@@ -242,6 +253,21 @@ fly.http.route("/images/:filename(^\\w+).:format", function staticImage(req, { p
 /*
 * This is a default handler when no routes match.
 */
-fly.http.respondWith(function (req) {
-  return new Response("docup not found", { status: 404 })
+addEventListener('fetch', function (event) {
+  const { request } = event
+  const path = new URL(request.url).pathname
+  const match = router.find(request.method, path)
+  if (!!match) {
+    event.respondWith(async function () {
+      try {
+        return await match.handler(request, match)
+      } catch (e) {
+        Raven.captureException(e)
+        return new Response("Something went wrong in DocumentUp, we've been notified.", { status: 500 })
+      }
+    })
+    return
+  }
+
+  event.respondWith(new Response("404", { status: 404 }))
 })
