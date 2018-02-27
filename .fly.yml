@@ -1,8 +1,11 @@
+config: &config
+  sentry_url:
+    fromSecret: sentry_url
+
 default: &default
   app_id: fly/documentup
   config:
-    sentry_url:
-      fromSecret: sentry_url
+    <<: *config
 
 development:
   <<: *default
@@ -10,6 +13,10 @@ development:
 
 test:
   <<: *default
+  config:
+    <<: *config
+    sentry_url: null
+
 
 production:
   <<: *default

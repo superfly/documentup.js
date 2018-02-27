@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@fly/fly": "^0.19.1",
+    "@fly/fly": "^0.19.2",
     "array-to-linkedlist": "^0.1.1",
     "arraybuffer-loader": "^1.0.3",
     "autoprefixer": "^7.2.3",
@@ -18,21 +18,21 @@
     "css-loader": "^0.28.7",
     "fetch-mock": "^6.0.0-beta.2",
     "file-loader": "^1.1.6",
+    "find-my-way": "^1.10.1",
+    "image-webpack-loader": "^4.1.0",
     "jstransformer-highlight": "^1.0.1",
     "marked": "^0.3.9",
     "multilang-extract-comments": "^0.3.0",
     "node-sass": "^4.7.2",
     "postcss-loader": "^2.0.9",
+    "prismjs": "^1.11.0",
     "pug": "^2.0.0-rc.4",
     "pug-loader": "^2.3.0",
+    "raven-js": "^3.22.3",
     "raw-loader": "^0.5.1",
     "sass-loader": "^6.0.6",
     "split-lines": "^1.1.0",
     "style-loader": "^0.19.1",
-    "to-string-loader": "^1.1.5",
-    "find-my-way": "^1.10.1",
-    "image-webpack-loader": "^4.1.0",
-    "prismjs": "^1.11.0",
-    "raven-js": "^3.22.3"
+    "to-string-loader": "^1.1.5"
   }
 }
