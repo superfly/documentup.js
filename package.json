@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@fly/fly": "^0.16.6",
+    "@fly/fly": "^0.19.1",
     "array-to-linkedlist": "^0.1.1",
     "arraybuffer-loader": "^1.0.3",
     "autoprefixer": "^7.2.3",
@@ -30,9 +30,6 @@
     "split-lines": "^1.1.0",
     "style-loader": "^0.19.1",
     "to-string-loader": "^1.1.5",
-    "webpack": "^3.10.0"
-  },
-  "dependencies": {
     "find-my-way": "^1.10.1",
     "image-webpack-loader": "^4.1.0",
     "prismjs": "^1.11.0",

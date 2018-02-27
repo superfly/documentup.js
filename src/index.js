@@ -4,9 +4,7 @@ const router = require('find-my-way')()
 if (app.config.sentry_url) {
   Raven.config(app.config.sentry_url, {
     environment: app.env,
-    tags: {
-      version: app.version
-    }
+    release: app.version
   }).install()
 }
 
@@ -255,6 +253,7 @@ router.on(["GET", "HEAD"], "/images/:filename(^\\w+).:format", function staticIm
 */
 addEventListener('fetch', function (event) {
   const { request } = event
+  Raven.setTagsContext({ transaction: `${request.method} ${request.url}` })
   const path = new URL(request.url).pathname
   const match = router.find(request.method, path)
   if (!!match) {
@@ -263,6 +262,7 @@ addEventListener('fetch', function (event) {
         return await match.handler(request, match)
       } catch (e) {
         Raven.captureException(e)
+        console.error("error when routing!", e.stack)
         return new Response("Something went wrong in DocumentUp, we've been notified.", { status: 500 })
       }
     })

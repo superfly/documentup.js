@@ -11,7 +11,7 @@ describe('documentup', () => {
   })
   after(() => { fetchMock.restore() })
 
-  it('fires the event', async () => {
+  it('fires the event', async function () {
     let res = await dispatchFetch(new Request("http://localhost/blah/blah"))
     let html = await res.text()
     expect(html).to.include(`<h1 id="hello-world">Hello world</h1>`)
