@@ -1,8 +1,10 @@
-const marked = require('marked')
-const prismjs = require('prismjs')
+import * as marked from 'marked'
+import * as prismjs from 'prismjs'
 
-module.exports = class Renderer {
+export default class Renderer {
   constructor(login, repo) {
+    this.login = login
+    this.repo = repo
     this.tableOfContents = []
     this.renderer = new marked.Renderer()
     this.baseUrl = `/${login}/${repo}/`
@@ -34,9 +36,23 @@ module.exports = class Renderer {
         return Prism.highlight(code, Prism.languages[language])
       }
     })
+
+    const doc = Document.parse(body)
+
+    for (const el of doc.querySelectorAll(`img[src]`)) {
+      let src = el.getAttribute("src")
+      console.log("SRC:", src)
+      if (!/(http|https):\/\//.test(src)) {
+        const newSrc = new URL(src, `https://cdn.rawgit.com/${this.login}/${this.repo}/master/`)
+          .toString()
+        console.log("NEW SRC:", newSrc)
+        el.setAttribute("src", newSrc)
+      }
+    }
+
     return {
       tableOfContents: this.tableOfContents,
-      body: body
+      body: doc.documentElement.outerHTML
     }
   }
 }

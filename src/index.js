@@ -1,5 +1,7 @@
 import Raven from 'raven-js'
-const router = require('find-my-way')()
+import * as fmw from 'find-my-way'
+
+const router = fmw({ ignoreTrailingSlash: true })
 
 if (app.config.sentry_url) {
   Raven.config(app.config.sentry_url, {
@@ -31,9 +33,8 @@ router.on(["GET", "HEAD"], "/", function rootHandler(req) {
 * Routes can include wildcard parameters that match multiple segments of a URL. 
 * Anything to `/superfly/documentup/path/to/file` gets the source code treatment.
 */
-router.on(["GET", "HEAD"], "/:login/:repo/*path", function codePageHandler(req, route) {
-  const params = route.params
-  return renderCode(params.login, params.repo, params['*'])
+router.on(["GET", "HEAD"], "/:login/:repo/*path", function fileHandler(req, { params }) {
+  return renderFile(params.login, params.repo, params['*'])
 })
 
 /* 
@@ -41,9 +42,10 @@ router.on(["GET", "HEAD"], "/:login/:repo/*path", function codePageHandler(req, 
 * The `renderRepo` function will request the a README file from Github's CDN, then render 
 * it to HTML from Markdown.
 */
-const Renderer = require('./renderer')
-const Repository = require('./repository')
-const pageTpl = require('./views/page.pug')
+import Renderer from './renderer'
+import Repository from './repository'
+import pageTpl from './views/page.pug'
+
 async function renderRepo(login, repoName) {
   const renderFn = async function () {
     /*
@@ -80,9 +82,9 @@ async function renderRepo(login, repoName) {
 * syntax highlighted code on the right. These are useful modules for extracting code and 
 * comments into a template-able format.
 */
-const commentExtractor = require('multilang-extract-comments')
-const splitLines = require('split-lines')
-const arrayToLinkedlist = require('array-to-linkedlist')
+import * as commentExtractor from 'multilang-extract-comments'
+import * as splitLines from 'split-lines'
+import * as arrayToLinkedlist from 'array-to-linkedlist'
 
 const extensions = {
   'js': 'javascript',
@@ -96,8 +98,9 @@ const extensions = {
   'tex': 'latex'
 };
 
-const codeTpl = require('./views/code.pug')
-async function renderCode(login, repoName, filePath) {
+import codeTpl from './views/code.pug'
+
+async function renderFile(login, repoName, filePath) {
   console.log(login, repoName, filePath)
   const renderFn = async function () {
     const url = `https://raw.githubusercontent.com/${login}/${repoName}/master/${filePath}`
@@ -105,6 +108,10 @@ async function renderCode(login, repoName, filePath) {
     if (response.status != 200) {
       return false
     }
+    if (response.headers.get('content-type').startsWith("image/")) {
+      return null
+    }
+
     /*
     * For most request, the extension will match the file format. Sometimes (like with .js) 
     * we need a language mapped from `extensions`.

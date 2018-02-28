@@ -1,4 +1,4 @@
-module.exports = class Repository {
+export default class Repository {
   constructor(login, repo) {
     this.login = login
     this.repo = repo

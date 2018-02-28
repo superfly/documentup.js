@@ -32,20 +32,29 @@ html
     main(role="main")
       - let commentsList = comments
       dl.annotated-code
-        while commentsList
-          - let current = commentsList.data
-          - let nextList = commentsList.next
-          - let nextComment = nextList ? nextList.data : null
+        if !commentsList
           dt.annotation
-            != markdown.render(current.content).body
-          dd.code
-            - let code = ''
-            if nextList
-              - code = source.slice(Math.max(current.codeStart - 1, 0), nextComment.begin - 1).join("\n")
-            else
-              - code = source.slice(Math.max(current.codeStart - 1, 0)).join("\n")
+          dt.code
             pre
               code(class=`language-${language}`)
-                - syntax = Prism.languages[language]
+                - let code = source.join("\n")
+                - let syntax = Prism.languages[language]
                 != (syntax && Prism.highlight(code, syntax)) || code
-          - commentsList = nextList
+        else
+          while commentsList
+            - let current = commentsList.data
+            - let nextList = commentsList.next
+            - let nextComment = nextList ? nextList.data : null
+            dt.annotation
+              != markdown.render(current.content).body
+            dd.code
+              - let code = ''
+              if nextList
+                - code = source.slice(Math.max(current.codeStart - 1, 0), nextComment.begin - 1).join("\n")
+              else
+                - code = source.slice(Math.max(current.codeStart - 1, 0)).join("\n")
+              pre
+                code(class=`language-${language}`)
+                  - let syntax = Prism.languages[language]
+                  != (syntax && Prism.highlight(code, syntax)) || code
+            - commentsList = nextList
