@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@fly/fly": "^0.20.1",
+    "@fly/fly": "^0.20.2",
     "array-to-linkedlist": "^0.1.1",
     "arraybuffer-loader": "^1.0.3",
     "autoprefixer": "^7.2.3",
